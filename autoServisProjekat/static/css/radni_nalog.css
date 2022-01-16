@@ -1,0 +1,23 @@
+.informacije_radni_nalog {
+    margin-top: 5px;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+#racun {
+    width: 500px;
+    margin: auto;
+    border: 2px solid black;
+}
+
+.isprekidana_hr {
+    border-top: 2px dashed black !important;
+    background-color: transparent;
+
+}
+
+.racun_info {
+    padding: 0;
+    margin: 0;
+    padding-left: 15px;
+}

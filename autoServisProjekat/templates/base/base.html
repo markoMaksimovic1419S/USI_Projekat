@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mechanic Belgrade</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    {% block extra_head %}
+    {% endblock %}
+</head>
+<body>
+{% include 'include/navbar.html' %}
+
+{% block sadrzaj %}
+{% endblock %}
+
+<script src="{% static 'js/bootstrap.js' %}"></script>
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script>
+    var pretraga = "NO";
+    let unos_kod = $("#kod_slucaja");
+    unos_kod.keyup(function () {
+        $.ajax({
+            type: 'POST',
+            url: '{% url "provera_kod" %}',
+            data: {
+                kod_slucaja: unos_kod.val(),
+            },
+            success: function (data) {
+                pretraga = data;
+            }
+        })
+    });
+
+    let kod_forma = $(".kod_forma");
+
+    $('.kod_forma').on('submit', kod_forma, function(e){
+        if(pretraga=="NO"){
+            alert("Radni slucaj sa datim kodom ne postoji");
+            e.preventDefault();
+        }
+    });
+
+</script>
+{% block extra_body %}
+{% endblock %}
+</body>
+</html>

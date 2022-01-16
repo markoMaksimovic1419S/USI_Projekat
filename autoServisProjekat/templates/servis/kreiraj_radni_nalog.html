@@ -1,0 +1,55 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/kreiranje_radni_nalog.css' %}">
+
+{% endblock %}
+{% block sadrzaj %}
+
+    <div class="container">
+        <h3 class="text-center mt-5">Kreiranje radnog naloga</h3>
+        <div class="row">
+            <form action="{% url 'kreairanje_radnog_naloga' %}" id="radni_nalog_forma" class="col-6 m-auto" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <h4>Podaci o klijentu</h4>
+                    <input type="text" name="klijent" placeholder="Ime i prezime klijenta" class="form-control mt-2"
+                           required>
+                    <input type="text" name="kontakt" maxlength="15" placeholder="Broj telefona"
+                           class="form-control mt-2"
+                           required>
+                </div>
+                <div class="form-group">
+                    <h4>Podaci o automobilu</h4>
+                    <select name="marka" id="marka" class="form-control mt-2">
+                        <option value="BMW">BMW</option>
+                        <option value="Renault">Renault</option>
+                        <option value="Fiat">Fiat</option>
+                        <option value="Citroen">Citroen</option>
+                        <option value="Audi">Audi</option>
+                        <option value="Alfa Romeo">Alfa Romeo</option>
+                        <option value="Mercedes">Mercedes</option>
+                        <option value="Toyota">Toyota</option>
+                        <option value="KIA">KIA</option>
+                        <option value="Ford">Ford</option>
+                        <option value="Skoda">Skoda</option>
+                    </select>
+                    <input type="text" name="model" placeholder="Model automobila" class="form-control mt-2" required>
+                    <input type="text" name="registracija" placeholder="Registraciona oznaka (nije obavezno)"
+                           class="form-control mt-2">
+                </div>
+                <textarea name="opis" id="opis" cols="30" rows="10" placeholder="Opis zahteva" class="form-control mt-2"
+                          required></textarea>
+                <input type="submit" value="Kreiraj radni nalog" class="btn btn-success mt-2">
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+{% block extra_body %}
+
+
+{% endblock %}
+
+
+

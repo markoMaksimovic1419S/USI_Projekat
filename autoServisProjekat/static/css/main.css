@@ -1,0 +1,9 @@
+#forma_prijava {
+    width: fit-content;
+    display: block;
+    margin: auto;
+}
+#prijava_dugme{
+    margin: auto;
+    display: block;
+}

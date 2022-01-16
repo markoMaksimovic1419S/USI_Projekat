@@ -1,0 +1,15 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+{% endblock %}
+
+{% block sadrzaj %}
+    <img src="{% static 'img/servis_logo_no_bg.png' %}" style="display: block; margin: auto; margin-top: 100px;" alt="">
+    <h4 class="mt-3 text-center">Unesite kod slucaja i proverite stanje vaseg automobila</h4>
+    <form id="kod_forma" action="{% url 'radni_nalog_kod' %}">
+        <input name="kod_slucaja" id="kod_slucaja" class="form-control mt-3" style=" border: 1px solid black; width: 200px; margin: auto;" type="text" placeholder="Unesite kod slucaja"
+               required>
+        <input type="submit" value="Proveri" class="btn btn-dark m-auto mt-3" style="display: block;">
+    </form>
+{% endblock %}

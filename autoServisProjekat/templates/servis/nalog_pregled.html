@@ -1,0 +1,331 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/radni_nalog.css' %}">
+
+
+{% endblock %}
+{% block sadrzaj %}
+    <div class="container">
+        <h3 class="text-center mt-5">Radni nalog, kod: {{ nalog.radni_nalog_kod }}</h3>
+        <h3 class="mb-5">Informacije</h3>
+
+        <p class="informacije_radni_nalog"><strong>Status radnog naloga:</strong>
+            {% if nalog.status == "OK" %}
+                Radni nalog je uspesno zavrsen
+            {% elif nalog.status == "UT" %}
+                Radni nalog je trenutno u toku
+            {% elif nalog.status == "NO" %}
+                Radni nalog je prekinut
+            {% elif nalog.status == "KR" %}
+                Radovi su zavrseni, ceka se odobrenje sefa servisa
+                {% if korisnik %}
+                    {% if korisnik.pozicija == "SS" %}
+                        <a href="{% url 'oznaci_prekinut' id=nalog.id %}" class="text-danger"
+                           onclick="return confirm('Da li ste sigurni? Radni nalog ce biti oznacen kao prekinut')"><br>
+                            <button class="btn btn-danger mb-3 mt-3">Oznaci radni nalog kao prekinut</button>
+                        </a><br>
+                        <a href="{% url 'oznaci_pr' id=nalog.id %}" class="text-danger"
+                           onclick="return confirm('Da li ste sigurni? Kreiracete racun za ovajradni nalog.')">
+                            <button class="btn btn-success mb-3">Oznaci radni nalog kao uspesno zavrsen</button>
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% elif nalog.status == "PR" %}
+                Racun je u procesu izrade
+                {% if korisnik %}
+                    <h5>Racun broj: {{ racun.id }}</h5>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Naziv stavke</th>
+                            <th>Opis stavke</th>
+                            <th>Cena</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for stavka in stavke_racuna %}
+                            <tr>
+                                <td>{{ stavka.naziv_stavke }}</td>
+                                <td>{{ stavka.opis_stavke }}</td>
+                                <td>{{ stavka.cena_stavke }} RSD</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <form action="{% url 'dodaj_stavku_racun' %}" id="dodaj_stavku_racun" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{ nalog.id }}">
+                                <td>
+                                    <input id="naziv_stavke" placeholder="Naziv stavke" name="naziv_stavke"
+                                           type="text"
+                                           style="width: 100%;" required>
+
+                                </td>
+                                <td>
+                                    <input id="opis_stavke" placeholder="Opis stavke (nije obavezno)" name="opis_stavke"
+                                           type="text"
+                                           style="width: 100%;">
+
+                                </td>
+                                <td class="text-right">
+                                    <input id="cena_stavke" placeholder="cena" name="cena_stavke"
+                                           type="number" min="1" value="1" style="width: 100%;">
+
+                                </td>
+                            </form>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <h5>Ukupna cena: {{ racun.ukupna_cena }}</h5>
+                    <button class="btn btn-info mb-3" onclick="$('#dodaj_stavku_racun').submit();">Dodaj stavku u
+                        racun
+                    </button>
+
+                    <a href="{% url 'oznaci_ok' id=nalog.id %}" class="text-danger"
+                       onclick="return confirm('Da li ste sigurni? Uspesno zavrsavate nalog i racun.')">
+                        <button class="btn btn-success mb-3">Zavrsi racun i oznaci nalog kao zavrsen</button>
+                    </a>
+
+                {% endif %}
+
+            {% else %}
+                {{ nalog.status }}
+            {% endif %}
+        </p>
+        <p class="informacije_radni_nalog"><strong>Nalog podneo:</strong> {{ nalog.radni_nalog_podneo|title }}</p>
+        <p class="informacije_radni_nalog"><strong>Ime i prezime klijenta:</strong> {{ nalog.ime_prezime_klijenta }}</p>
+        <p class="informacije_radni_nalog"><strong>Kontakt klijenta:</strong> {{ nalog.kontakt_telefon }}</p>
+        <p class="informacije_radni_nalog"><strong>Registraciona oznaka:</strong> {{ nalog.registracija }}</p>
+        <p class="informacije_radni_nalog"><strong>Datum podnosenja radnog
+            naloga:</strong> {{ nalog.datum_podnosenja_radnog_naloga }}</p>
+        <p class="informacije_radni_nalog"><strong>Opis zahteva
+            :</strong> {{ nalog.opis_kvara }}</p>
+
+
+        <h4 class="mt-3">Tok rada</h4>
+        <table class="table mt-2">
+            <thead>
+            <tr>
+                <th>Opis rada</th>
+                <th>Datum</th>
+                <th>Zabelezio</th>
+                {% if korisnik %}
+                    {% if nalog.status == "UT" %}
+                        <th>Ukloni</th>
+                    {% endif %}
+                {% endif %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for stavka in progres %}
+                <tr>
+                    <td>{{ stavka.opis_progresa }}</td>
+                    <td>{{ stavka.datum_belezenja_progresa }}</td>
+                    <td>{{ stavka.zabelezio.first_name }} {{ stavka.zabelezio.last_name }}</td>
+                    {% if korisnik %}
+                        {% if nalog.status == "UT" %}
+                            <td><a href="{% url 'obrisi_progres' id=stavka.id %}" class="text-danger"
+                                   onclick="return confirm('Da li ste sigurni, OK za uklanjanje?')">Ukloni</a></td>
+                        {% endif %}
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            {% if korisnik %}
+                {% if nalog.status == "UT" %}
+                    <td>
+                        <form action="{% url 'dodaj_progres' %}" id="dodaj_progres" method="post">
+                            {% csrf_token %}
+                            <input id="opis_progresa" placeholder="Opis progresa" name="opis_progresa" type="text"
+                                   style="width: 100%;" required>
+                            <input name="id" type="hidden" value="{{ nalog.id }}" required>
+                        </form>
+                    </td>
+                    <td colspan="3" class="text-center">Automatski ce se dodati</td>
+                {% endif %}
+            {% endif %}
+            </tbody>
+        </table>
+        {% if korisnik %}
+            {% if nalog.status == "UT" %}
+                <button class="btn btn-success" onclick="$('#dodaj_progres').submit();">Zabelezi progres</button>
+                <a href="{% url 'posalji_na_proveru' id=nalog.id %}">
+                    <button class="btn btn-warning">Radovi su zavrseni, posalji nalog na proveru</button>
+                </a>
+            {% endif %}
+        {% endif %}
+
+        {% if nalog.status == "UT" %}
+            <hr>
+            <h4 class="mt-3">Narucivanje delova</h4>
+            <table class="table mt-2">
+                <thead>
+                <tr>
+                    <th>Deo</th>
+                    <th>Komada</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for deo in naruceni_delovi %}
+                    <tr>
+                        <td>{{ deo.potrebni_deo }}</td>
+                        <td>{{ deo.komada }}</td>
+                        {% if deo.status == "OK" %}
+                            <td class="text-success">DOSTAVLJENO</td>
+                        {% elif deo.status == "OS" %}
+                            <td class="text-warning">Porudzbina poslata sefu servisa</td>
+                        {% elif deo.status == "SO" %}
+                            <td class="text-danger">Sef servisa je odbio porucivanje</td>
+                        {% elif deo.status == "SP" %}
+                            <td class="text-warning">Porudzbina je prosledjena magacinu</td>
+                        {% elif deo.status == "MO" %}
+                            <td class="text-danger">Magacin je odbio porudzbinu</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                {% if korisnik %}
+                    <tr>
+                        <form action="{% url 'naruci_deo' %}" method="post" id="narucivanje_delova_forma">
+                            {% csrf_token %}
+                            <td><input style="width: 100%;" type="text" name="naziv_dela"
+                                       placeholder="Naziv potrebnog dela"
+                                       required></td>
+                            <td><input type="number" name="kolicina" min="1" value="1" required></td>
+                            <input type="hidden" name="radni_nalog_id" value="{{ nalog.id }}">
+                            <td>Automatski popunjeno</td>
+                        </form>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+
+            {% if korisnik %}
+                <button class="btn btn-success" onclick="$('#narucivanje_delova_forma').submit();">Posalji zahtev
+                    magacinu
+                </button>
+            {% endif %}
+        {% endif %}
+
+        <hr>
+        <h4 class="mt-3">Korisceni delovi</h4>
+        <table class="table mt-2">
+            <thead>
+            <tr>
+                <th>Deo</th>
+                <th>Komada</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for deo in delovi %}
+                <tr>
+                    <td>{{ deo.potrebni_deo }}</td>
+                    <td>{{ deo.komada }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if racun %}
+            {% if nalog.status == "PR" %}
+                {% if korisnik %}
+                    <div id="ceo_racun">
+                        <div id="racun" class="mb-5">
+                            <h2 class="text-center mt-1">MECHANIC BELGRADE</h2>
+                            <h4 class="text-center">Neka ulica b.b.</h4>
+                            <h5 class="text-center">11000 Beograd</h5>
+                            <p class="racun_info">PIB: 123123123</p>
+                            <p class="racun_info">IBFM: SI1123123</p>
+                            <hr class="isprekidana_hr">
+                            <p class="text-center fw-bold fs-5">Kasa: 1, Racun: {{ racun.id }}</p>
+                            <hr class="isprekidana_hr">
+                            <h4 class="racun_info">Stavke racuna:</h4>
+                            <ol>
+                                {% for stavka in stavke_racuna %}
+                                    <li>{{ stavka.naziv_stavke }}, {{ stavka.cena_stavke }} RSD
+                                        <ul>
+                                            <li>
+                                                {{ stavka.opis_stavke }}</li>
+                                        </ul>
+                                    </li>
+                                {% endfor %}
+                            </ol>
+
+                            <hr class="isprekidana_hr">
+                            <h4 class="racun_info">Za uplatu: {{ racun.ukupna_cena }} RSD</h4>
+                            <h5 class="racun_info mb-3">Datum: {{ racun.datum_izdavanja_racuna }}</h5>
+
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success mb-5" style="display: block; margin: auto;"
+                            onclick="stampajRacun();">Stampaj
+                        racun
+                    </button>
+                {% endif %}
+            {% endif %}
+            {% if nalog.status == "OK" %}
+                <div id="ceo_racun">
+                    <div id="racun" class="mb-5">
+                        <h2 class="text-center mt-1">MECHANIC BELGRADE</h2>
+                        <h4 class="text-center">Neka ulica b.b.</h4>
+                        <h5 class="text-center">11000 Beograd</h5>
+                        <p class="racun_info">PIB: 123123123</p>
+                        <p class="racun_info">IBFM: SI1123123</p>
+                        <hr class="isprekidana_hr">
+                        <p class="text-center fw-bold fs-5">Kasa: 1, Racun: {{ racun.id }}</p>
+                        <hr class="isprekidana_hr">
+                        <h4 class="racun_info">Stavke racuna:</h4>
+                        <ol>
+                            {% for stavka in stavke_racuna %}
+                                <li>{{ stavka.naziv_stavke }}, {{ stavka.cena_stavke }} RSD
+                                    <ul>
+                                        <li>
+                                            {{ stavka.opis_stavke }}</li>
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ol>
+
+                        <hr class="isprekidana_hr">
+                        <h4 class="racun_info">Za uplatu: {{ racun.ukupna_cena }} RSD</h4>
+                        <h5 class="racun_info mb-3">Datum: {{ racun.datum_izdavanja_racuna }}</h5>
+
+                    </div>
+                </div>
+
+                <button class="btn btn-success mb-5" style="display: block; margin: auto;"
+                        onclick="stampajRacun();">Stampaj
+                    racun
+                </button>
+            {% endif %}
+        {% endif %}
+
+    </div>
+{% endblock %}
+{% block extra_body %}
+
+    <script>
+        function stampajRacun() {
+
+            var divToPrint = document.getElementById('ceo_racun');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+
+            newWin.document.write('<!DOCTYPE html><html><head>' +
+                '<link rel="stylesheet" href="{% static "css/bootstrap.css" %}">' +
+                '<link rel="stylesheet" href="{% static "css/radni_nalog.css" %}">' +
+                '</head><body onload="window.print()">' + divToPrint.innerHTML + '</body></html>');
+
+            newWin.document.close();
+
+            setTimeout(function () {
+                newWin.close();
+            }, 10);
+
+        }
+
+
+    </script>
+
+{% endblock %}

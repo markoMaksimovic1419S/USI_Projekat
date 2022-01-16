@@ -1,0 +1,50 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+
+
+
+{% endblock %}
+{% block sadrzaj %}
+
+    <div class="container">
+        <h3 class="mt-3">Pregled , radnik: {{ user.first_name }} {{ user.last_name }}</h3>
+
+        {% if radni_nalozi %}
+            <h4 class="mt-3">Radni nalozi u toku:</h4>
+            <table class="table">
+                <thead>
+                <tr>
+                    <td>Kod radnog naloga</td>
+                    <td>Datum kreiranja naloga</td>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr>
+                    {% for nalog in radni_nalozi %}
+                        <td><a target="_blank"
+                               href="{% url 'radni_nalog_kod' %}?kod_slucaja={{ nalog.radni_nalog_kod }}">
+                            {{ nalog.radni_nalog_kod }}
+                        </a></td>
+                        <td>{{ nalog.datum_podnosenja_radnog_naloga }}</td>
+
+                    {% endfor %}
+                </tr>
+
+                </tbody>
+            </table>
+        {% else %}
+            <h3>Trenutno nema aktivnih radnih naloga</h3>
+        {% endif %}
+
+
+    </div>
+{% endblock %}
+{% block extra_body %}
+
+
+
+
+{% endblock %}
